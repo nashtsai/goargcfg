@@ -3,6 +3,7 @@ package argcfg
 import (
 	"reflect"
 	"os"
+	"fmt"
 	"strings"
 	"strconv"
 )
@@ -11,6 +12,8 @@ func LoadArgs(cfg interface{}) (err os.Error) {
 	for _, arg := range os.Args {
 		err = LoadArg(arg, cfg)
 		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error for \"%v\": %v\n", arg, err)
+			os.Exit(1)
 			return
 		}
 	}
@@ -41,7 +44,7 @@ func LoadKeysVal(keys []string, val string, objValue reflect.Value) (err os.Erro
 		//we're here - dump val onto obj
 		switch fieldType := objType.(type) {
 		case *reflect.FloatType:
-			tval, err := strconv.Atof(val)
+			tval, err := strconv.Atof64(val)
 			if err != nil {
 				return
 			}
@@ -52,6 +55,12 @@ func LoadKeysVal(keys []string, val string, objValue reflect.Value) (err os.Erro
 				return
 			}
 			objValue.(*reflect.IntValue).Set(int64(tval))
+		case *reflect.UintType:
+			tval, err := strconv.Atoi(val)
+			if err != nil {
+				return
+			}
+			objValue.(*reflect.UintValue).Set(uint64(tval))
 		case *reflect.BoolType:
 			tval, err := strconv.Atob(val)
 			if err != nil {
