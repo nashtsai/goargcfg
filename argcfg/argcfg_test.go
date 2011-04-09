@@ -1,4 +1,4 @@
-package cfg
+package argcfg
 
 import (
 	"testing"
@@ -11,7 +11,7 @@ type SubConfig struct {
 }
 
 type Config struct {
-	F float
+	F float64
 	S SubConfig
 }
 

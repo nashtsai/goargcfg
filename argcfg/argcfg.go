@@ -29,8 +29,14 @@ func LoadArg(arg string, cfg interface{}) (err os.Error) {
 	key, val := tokens[0], tokens[1]
 	keys := strings.Split(key, ".", -1)
 	
-	ptrValue := reflect.NewValue(cfg).(*reflect.PtrValue)
-	objValue := ptrValue.Elem()
+	v := reflect.NewValue(cfg)
+	if v.Kind() != reflect.Ptr {
+		return os.NewError(fmt.Sprintf("%v is not a pointer", cfg))
+	}
+	objValue := v.Elem()
+	
+	//ptrValue := reflect.NewValue(cfg).(*reflect.PtrValue)
+	//objValue := ptrValue.Elem()
 	
 	err = LoadKeysVal(keys, val, objValue)
 	
@@ -38,9 +44,39 @@ func LoadArg(arg string, cfg interface{}) (err os.Error) {
 }
 
 func LoadKeysVal(keys []string, val string, objValue reflect.Value) (err os.Error) {
-	objType := objValue.Type()	
+	//objType := objValue.Type()	
 	
 	if len(keys) == 0 {
+	
+		switch objValue.Kind() {
+		case reflect.Float32, reflect.Float64:
+			tval, err := strconv.Atof64(val)
+			if err != nil {
+				return
+			}
+			objValue.SetFloat(tval)
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			tval, err := strconv.Atoi64(val)
+			if err != nil {
+				return
+			}
+			objValue.SetInt(tval)
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			tval, err := strconv.Atoui64(val)
+			if err != nil {
+				return
+			}
+			objValue.SetUint(tval)
+		case reflect.Bool:
+			tval, err := strconv.Atob(val)
+			if err != nil {
+				return
+			}
+			objValue.SetBool(tval)
+		case reflect.String:
+			objValue.SetString(val)
+		}
+		/*
 		//we're here - dump val onto obj
 		switch fieldType := objType.(type) {
 		case *reflect.FloatType:
@@ -74,20 +110,20 @@ func LoadKeysVal(keys []string, val string, objValue reflect.Value) (err os.Erro
 			}
 			objValue.(*reflect.StringValue).Set(tval)
 		}
+		*/
 		return
 	}
 	
 	//otherwise obj needs to be a struct
 	
-	structValue, ok := objValue.(*reflect.StructValue)
-	
-	if !ok {
+	if objValue.Kind() != reflect.Struct {
 		err = os.NewError("not a struct")
 		return
 	}
 	
-	subValue := structValue.FieldByName(keys[0])
-	if subValue == nil {
+	
+	subValue := objValue.FieldByName(keys[0])
+	if !subValue.IsValid() {
 		return os.NewError("nil, somehow")
 	}
 	
