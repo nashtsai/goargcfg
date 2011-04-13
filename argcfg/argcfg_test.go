@@ -4,14 +4,17 @@ import (
 	"testing"
 	"fmt"
 	"runtime"
+	"strconv"
+	"os"
 )
 
 type SubConfig struct {
 	G int
+	Str string
 }
 
 type Config struct {
-	F float64
+	F float64 "something"
 	S SubConfig
 }
 
@@ -34,9 +37,21 @@ func TestCFG(t *testing.T) {
 	}()
 	var c Config
 	c.F = 2
+	c.S.Str = "Hello!"
+	Usage(os.Stdout, &c)
 	err := LoadArg("-F=.75", &c)
+	if err != nil {
+		t.Error(err)
+	}
 	err = LoadArg("-S.G=2", &c)
-	fmt.Printf("err = %v\n", err)
-	println(c.F)
-	println(c.S.G)
+	if err != nil {
+		t.Error(err)
+	}
+	v, _ := strconv.Atof64(".75")
+	if c.F != v {
+		t.Fail()
+	}
+	if c.S.G != 2 {
+		t.Fail()
+	}
 }
