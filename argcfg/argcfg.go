@@ -10,29 +10,29 @@ import (
 )
 
 func Usage(out io.Writer, cfg interface{}) {
-	obj := reflect.NewValue(cfg)
+	obj := reflect.ValueOf(cfg)
 	if obj.Kind() == reflect.Ptr {
 		usageAux(out, "", obj.Elem())
-	}	
+	}
 }
 
 func usageAux(out io.Writer, prefix string, obj reflect.Value) {
-	
+
 	if obj.Kind() == reflect.Struct {
 		typ := obj.Type()
-		for i:=0; i<obj.NumField(); i++ {
+		for i := 0; i < obj.NumField(); i++ {
 			ftyp := typ.Field(i)
-			
+
 			if ftyp.PkgPath != "" {
 				continue
 			}
-			
+
 			fobj := obj.Field(i)
 			name := ftyp.Name
 			if prefix != "" {
 				name = fmt.Sprintf("%s.%s", prefix, ftyp.Name)
 			}
-			
+
 			if fobj.Kind() == reflect.Struct {
 				usageAux(out, name, fobj)
 			} else {
@@ -40,7 +40,7 @@ func usageAux(out io.Writer, prefix string, obj reflect.Value) {
 				if fobj.Kind() == reflect.String {
 					valstr = fmt.Sprintf("%q", fobj.Interface())
 				}
-				fmt.Fprintf(out, "  -%s %T = %s", name, fobj.Interface(), valstr)
+				fmt.Fprintf(out, "  -%s=%s (%T)", name, valstr, fobj.Interface())
 				if ftyp.Tag != "" {
 					fmt.Fprintf(out, ": %s", ftyp.Tag)
 				}
@@ -76,25 +76,25 @@ func LoadArg(arg string, cfg interface{}) (err os.Error) {
 	tokens := strings.Split(arg, "=", -1)
 	key, val := tokens[0], tokens[1]
 	keys := strings.Split(key, ".", -1)
-	
-	v := reflect.NewValue(cfg)
+
+	v := reflect.ValueOf(cfg)
 	if v.Kind() != reflect.Ptr {
 		return os.NewError(fmt.Sprintf("%v is not a pointer", cfg))
 	}
-	
+
 	err = LoadKeysVal(keys, val, v.Elem())
-	
+
 	return
 }
 
 func LoadKeysVal(keys []string, val string, objValue reflect.Value) (err os.Error) {
 	if len(keys) == 0 {
 		//we're here - dump val onto obj
-		
+
 		if !objValue.CanSet() {
 			err = os.NewError("Attempting to set an unexported field")
 		}
-		
+
 		switch objValue.Kind() {
 		case reflect.Float32, reflect.Float64:
 			tval, err := strconv.Atof64(val)
@@ -125,18 +125,18 @@ func LoadKeysVal(keys []string, val string, objValue reflect.Value) (err os.Erro
 		}
 		return
 	}
-	
+
 	//otherwise obj needs to be a struct
 	if objValue.Kind() != reflect.Struct {
 		err = os.NewError("not a struct")
 		return
 	}
-	
+
 	subValue := objValue.FieldByName(keys[0])
 	if !subValue.IsValid() {
 		return os.NewError("Invalid field")
 	}
-	
+
 	err = LoadKeysVal(keys[1:len(keys)], val, subValue)
 
 	return
