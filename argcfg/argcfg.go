@@ -73,9 +73,9 @@ func LoadArg(arg string, cfg interface{}) (err os.Error) {
 		return
 	}
 	arg = arg[1:len(arg)]
-	tokens := strings.Split(arg, "=", -1)
+	tokens := strings.Split(arg, "=")
 	key, val := tokens[0], tokens[1]
-	keys := strings.Split(key, ".", -1)
+	keys := strings.Split(key, ".")
 
 	v := reflect.ValueOf(cfg)
 	if v.Kind() != reflect.Ptr {
