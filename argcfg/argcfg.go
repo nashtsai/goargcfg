@@ -97,25 +97,29 @@ func LoadKeysVal(keys []string, val string, objValue reflect.Value) (err os.Erro
 
 		switch objValue.Kind() {
 		case reflect.Float32, reflect.Float64:
-			tval, err := strconv.Atof64(val)
+			var tval float64
+			tval, err = strconv.Atof64(val)
 			if err != nil {
 				return
 			}
 			objValue.SetFloat(tval)
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			tval, err := strconv.Atoi64(val)
+			var tval int64
+			tval, err = strconv.Atoi64(val)
 			if err != nil {
 				return
 			}
 			objValue.SetInt(tval)
 		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			tval, err := strconv.Atoui64(val)
+			var tval uint64
+			tval, err = strconv.Atoui64(val)
 			if err != nil {
 				return
 			}
 			objValue.SetUint(tval)
 		case reflect.Bool:
-			tval, err := strconv.Atob(val)
+			var tval bool
+			tval, err = strconv.Atob(val)
 			if err != nil {
 				return
 			}
