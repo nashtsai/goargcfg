@@ -1,6 +1,7 @@
 package argcfg
 
 import (
+	"errors"
 	"reflect"
 	"os"
 	"io"
@@ -50,7 +51,7 @@ func usageAux(out io.Writer, prefix string, obj reflect.Value) {
 	}
 }
 
-func LoadArgs(cfg interface{}) (ok bool, err os.Error) {
+func LoadArgs(cfg interface{}) (ok bool, err error) {
 	for _, arg := range os.Args {
 		if arg == "-?" || arg == "-help" || arg == "--help" {
 			Usage(os.Stderr, cfg)
@@ -68,7 +69,7 @@ func LoadArgs(cfg interface{}) (ok bool, err os.Error) {
 	return
 }
 
-func LoadArg(arg string, cfg interface{}) (err os.Error) {
+func LoadArg(arg string, cfg interface{}) (err error) {
 	if arg[0] != '-' {
 		return
 	}
@@ -79,7 +80,7 @@ func LoadArg(arg string, cfg interface{}) (err os.Error) {
 
 	v := reflect.ValueOf(cfg)
 	if v.Kind() != reflect.Ptr {
-		return os.NewError(fmt.Sprintf("%v is not a pointer", cfg))
+		return errors.New(fmt.Sprintf("%v is not a pointer", cfg))
 	}
 
 	err = LoadKeysVal(keys, val, v.Elem())
@@ -87,12 +88,12 @@ func LoadArg(arg string, cfg interface{}) (err os.Error) {
 	return
 }
 
-func LoadKeysVal(keys []string, val string, objValue reflect.Value) (err os.Error) {
+func LoadKeysVal(keys []string, val string, objValue reflect.Value) (err error) {
 	if len(keys) == 0 {
 		//we're here - dump val onto obj
 
 		if !objValue.CanSet() {
-			err = os.NewError("Attempting to set an unexported field")
+			err = errors.New("Attempting to set an unexported field")
 		}
 
 		switch objValue.Kind() {
@@ -132,13 +133,13 @@ func LoadKeysVal(keys []string, val string, objValue reflect.Value) (err os.Erro
 
 	//otherwise obj needs to be a struct
 	if objValue.Kind() != reflect.Struct {
-		err = os.NewError("not a struct")
+		err = errors.New("not a struct")
 		return
 	}
 
 	subValue := objValue.FieldByName(keys[0])
 	if !subValue.IsValid() {
-		return os.NewError("Invalid field")
+		return errors.New("Invalid field")
 	}
 
 	err = LoadKeysVal(keys[1:len(keys)], val, subValue)
