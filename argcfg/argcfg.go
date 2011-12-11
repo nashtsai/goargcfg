@@ -2,12 +2,12 @@ package argcfg
 
 import (
 	"errors"
-	"reflect"
-	"os"
-	"io"
 	"fmt"
-	"strings"
+	"io"
+	"os"
+	"reflect"
 	"strconv"
+	"strings"
 )
 
 func Usage(out io.Writer, cfg interface{}) {
@@ -99,28 +99,28 @@ func LoadKeysVal(keys []string, val string, objValue reflect.Value) (err error) 
 		switch objValue.Kind() {
 		case reflect.Float32, reflect.Float64:
 			var tval float64
-			tval, err = strconv.Atof64(val)
+			tval, err = strconv.ParseFloat(val, 64)
 			if err != nil {
 				return
 			}
 			objValue.SetFloat(tval)
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 			var tval int64
-			tval, err = strconv.Atoi64(val)
+			tval, err = strconv.ParseInt(val, 10, 64)
 			if err != nil {
 				return
 			}
 			objValue.SetInt(tval)
 		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 			var tval uint64
-			tval, err = strconv.Atoui64(val)
+			tval, err = strconv.ParseUint(val, 10, 64)
 			if err != nil {
 				return
 			}
 			objValue.SetUint(tval)
 		case reflect.Bool:
 			var tval bool
-			tval, err = strconv.Atob(val)
+			tval, err = strconv.ParseBool(val)
 			if err != nil {
 				return
 			}

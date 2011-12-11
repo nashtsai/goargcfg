@@ -1,15 +1,15 @@
 package argcfg
 
 import (
-	"testing"
 	"fmt"
+	"os"
 	"runtime"
 	"strconv"
-	"os"
+	"testing"
 )
 
 type SubConfig struct {
-	G int
+	G   int
 	Str string
 }
 
@@ -23,15 +23,15 @@ func TestCFG(t *testing.T) {
 		e := recover()
 		if e != nil {
 			fmt.Printf("%v\n", e)
-			for skip:=1; ; skip++ {
-				 _, file, line, ok := runtime.Caller(skip)
-				 if !ok {
+			for skip := 1; ; skip++ {
+				_, file, line, ok := runtime.Caller(skip)
+				if !ok {
 					break
-				 }
-				 if file[len(file)-1] == 'c' {
+				}
+				if file[len(file)-1] == 'c' {
 					continue
-				 }
-				 fmt.Printf("%s:%d\n", file, line)
+				}
+				fmt.Printf("%s:%d\n", file, line)
 			}
 		}
 	}()
@@ -47,7 +47,7 @@ func TestCFG(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	v, _ := strconv.Atof64(".75")
+	v, _ := strconv.ParseFloat(".75", 64)
 	if c.F != v {
 		t.Fail()
 	}
