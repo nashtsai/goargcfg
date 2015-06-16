@@ -1,0 +1,1 @@
+A go package that uses reflection to fill a struct from command line args
